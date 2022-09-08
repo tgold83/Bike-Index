@@ -1,40 +1,43 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './css/styles.css';
-import StolenBikeService from './stolen-bike-service.js'
+import StolenBikeService from './stolen-bike-service.js';
 
 // Business Logic
 
 function stolenBike(location) {
-  let promise = StolenBikeService.stolenBike(location);
-  promise.then(function(weatherDataArray) {
-    printElements(weatherDataArray);
-  }, function(errorArray) {
-    printError(errorArray);
-  });
+  StolenBikeService.stolenBike(location)
+    .then(function(response) {
+      if (response.bikes) {
+        printElements(response, location);
+      } else {
+        printError(response, location);
+      }
+    });
 }
 
 // UI Logic
 
-function printError(request, apiResponse, city) {
-  document.querySelector('#showResponse').innerText = `There was an error accessing the weather data for ${city}: ${request.status} ${request.statusText}: ${apiResponse.message}`;
+function printError(error, location) {
+  document.querySelector('#showResponse').innerText = `There was an error accessing the stolen bike data for ${location}: ${error}`;
 }
 
-function printElements(apiResponse, city) { 
-  document.querySelector('#showResponse').innerText = `The humidity in ${city} is ${apiResponse.main.humidity}%.
-  The temperature in Fahrenheit is ${(1.8 * (apiResponse.main.temp-273))+32} degrees.
-  The temperature in Kelvin is ${apiResponse.main.temp} degrees.
-  The timezone is ${apiResponse.timezone}.
-  The tempurature feels like ${apiResponse.main.feels_like} degrees Kelvin.
-  Sunrise will occur at ${apiResponse.sys.sunrise} UTC.
-  Sunset will occur at ${apiResponse.sys.sunset} UTC.`; 
+function printElements(response) { 
+  console.log("Type of response.bikes " + typeof response.bikes[1] + response.bikes[1]);
+
+  let bikeArray = response.bikes;
+  for (let i = 0; i < bikeArray.length; i ++) {
+    let bike = document.createElement("p");
+    bike.innerText = bikeArray[i]["frame_model"];
+    document.querySelector('#showResponse').append(bike); 
+  }  
 }
 
 function handleFormSubmission(event) {
   event.preventDefault();
-  const city = document.querySelector('#location').value;
-  document.querySelector('#location').value = null;
-  getWeather(city);
+  const location = document.querySelector('#location').value;
+  // document.querySelector('#location').value = null;
+  stolenBike(location);
 }
 
 window.addEventListener("load", function() {
